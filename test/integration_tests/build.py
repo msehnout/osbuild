@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 from .config import *
+from . import rel_path
 
 
 def run_osbuild(pipeline: str, check=True):
@@ -23,3 +24,7 @@ def run_osbuild(pipeline: str, check=True):
 
 def build_testing_image(pipeline_full_path):
     run_osbuild(pipeline_full_path)
+
+
+def build_image(pipeline: str):
+    run_osbuild(rel_path(f"pipelines/{pipeline}"))
