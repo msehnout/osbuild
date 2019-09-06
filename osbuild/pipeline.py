@@ -5,6 +5,9 @@ import json
 import os
 import subprocess
 import tempfile
+from typing import Any, Dict, List, Union, Optional
+
+from osbuild.buildroot import BuildRoot
 from . import buildroot
 from . import objectstore
 from . import remoteloop
@@ -135,29 +138,43 @@ class Assembler:
 
 
 class Pipeline:
-    def __init__(self, build=None):
-        self.build = build
-        self.stages = []
-        self.assembler = None
+    """Pipeline defines a series of stages that define the result image."""
 
-    def get_id(self):
+    def __init__(self, build=None):
+        """
+        Create a new pipeline with optional "build" pipeline (That is a pipeline to create an environment in which the
+        final image will be created. It is used e.g. to bootstrap Fedora container on Ubuntu.)
+        """
+        self.build: Optional[Pipeline] = build
+        self.stages: List[Stage] = []
+        self.assembler: Optional[Assembler] = None
+
+    def get_id(self) -> Optional[str]:
+        """Get ID describing the whole pipeline. It is equal to the ID of the last stage in this pipeline."""
         return self.stages[-1].id if self.stages else None
 
-    def add_stage(self, name, options=None):
+    def add_stage(self, name: str, options: Dict[Any, Any] = None):
+        """Create new stage object and append it to the current list of stages."""
         build = self.build.get_id() if self.build else None
         stage = Stage(name, build, self.get_id(), options or {})
         self.stages.append(stage)
 
-    def set_assembler(self, name, options=None):
+    def set_assembler(self, name: str, options: Dict[Any, Any] = None):
+        """Set assembler for this pipeline. Note that assembler is optional."""
         self.assembler = Assembler(name, options or {})
 
-    def prepend_build_pipeline(self, build):
+    def prepend_build_pipeline(self, build: "Pipeline"):
+        """
+        Prepend a "build" pipeline before the very first pipeline (in case the self.build pipeline already has a "build"
+        pipeline itself.
+        """
         pipeline = self
         while pipeline.build:
             pipeline = pipeline.build
         pipeline.build = build
 
     def description(self):
+        """Return full description (=definition) of this pipeline including all build pipelines recursively."""
         description = {}
         if self.build:
             description["build"] = self.build.description()
@@ -168,7 +185,11 @@ class Pipeline:
         return description
 
     @contextlib.contextmanager
-    def get_buildtree(self, object_store):
+    def get_buildtree(self, object_store: objectstore.ObjectStore):
+        """
+        Yield temporary directory where either host root or build filesystem tree is mounted (or empty dir if the
+        build is specified but not found).
+        """
         if self.build:
             with object_store.get_tree(self.build.get_id()) as tree:
                 yield tree
@@ -180,10 +201,11 @@ class Pipeline:
                 finally:
                     subprocess.run(["umount", "--lazy", tmp], check=True)
 
-    def run(self, output_dir, store, interactive=False, check=True, libdir=None):
+    def run(self, output_dir: Optional[str], store: str, interactive=False, check=True, libdir: str = None):
+        """Run all the stages and the assembler in the build tree."""
         os.makedirs("/run/osbuild", exist_ok=True)
         object_store = objectstore.ObjectStore(store)
-        results = {
+        results: Dict[str, Any] = {
             "stages": []
         }
         if self.build:
