@@ -1,0 +1,96 @@
+{
+  "build": {
+    "stages": [
+      {
+        "name": "org.osbuild.dnf",
+        "options": {
+          "releasever": "7",
+          "basearch": "x86_64",
+          "repos": [
+            {
+              "baseurl": "http://merlin.fit.vutbr.cz/mirrors/centos/7/os/x86_64/",
+              "gpgkey": "6341 AB27 53D7 8A78 A7C2  7BB1 24C6 A8A7 F4A8 0EB5",
+              "checksum": "sha256:1b7aff273e47aae748f205085fc36bc4a84b7f7b7505bdf9da25a53a3acd5567"
+            }
+          ],
+          "packages": [
+            "e2fsprogs",
+            "grub2-pc",
+            "policycoreutils",
+            "qemu-img",
+            "systemd",
+            "glibc",
+            "python3"
+          ]
+        }
+      }
+    ]
+  },
+  "stages": [
+    {
+      "name": "org.osbuild.yum",
+      "options": {
+        "releasever": "7",
+        "basearch": "x86_64",
+        "repos": [
+          {
+            "baseurl": "http://merlin.fit.vutbr.cz/mirrors/centos/7/os/x86_64/",
+            "gpgkey": "6341 AB27 53D7 8A78 A7C2  7BB1 24C6 A8A7 F4A8 0EB5",
+            "checksum": "sha256:1b7aff273e47aae748f205085fc36bc4a84b7f7b7505bdf9da25a53a3acd5567"
+          }
+        ],
+        "packages": [
+          "kernel",
+          "@core",
+          "grub2-pc"
+        ]
+      }
+    },
+    {
+      "name": "org.osbuild.locale",
+      "options": {
+        "language": "en_US"
+      }
+    },
+    {
+      "name": "org.osbuild.fstab",
+      "options": {
+        "filesystems": [
+          {
+            "uuid": "ea711a29-e460-4879-9d70-9da99ae021f9",
+            "vfs_type": "ext4",
+            "path": "/",
+            "freq": "1",
+            "passno": "1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "org.osbuild.grub2",
+      "options": {
+        "root_fs_uuid": "ea711a29-e460-4879-9d70-9da99ae021f9",
+        "kernel_opts": "ro biosdevname=0 net.ifnames=0"
+      }
+    },
+    {
+      "name": "org.osbuild.selinux",
+      "options": {
+        "file_contexts": "etc/selinux/targeted/contexts/files/file_contexts"
+      }
+    },
+    {
+      "name": "org.osbuild.fix-bls"
+    }
+  ],
+  "assembler": {
+    "name": "org.osbuild.qemu",
+    "options": {
+      "format": "qcow2",
+      "filename": "centos-minimal.qcow2",
+      "ptuuid": "0x14fc63d2",
+      "root_fs_uuid": "ea711a29-e460-4879-9d70-9da99ae021f9",
+      "size": 3221225472
+    }
+  }
+}
