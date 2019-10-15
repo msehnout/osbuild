@@ -5,7 +5,7 @@ VERSION = $$(python3 setup.py --version)
 
 sdist:
 	python3 setup.py sdist
-	find `pwd`/dist -name '*.tar.gz' -printf '%f\n' -exec mv {} . \;
+	find `pwd`/dist -name '*.tar.gz' -printf '%f\n' -exec mv {} $(VERSION).tar.gz \;
 
 tarball:
 	git archive --prefix=osbuild-$(VERSION)/ --format=tar.gz HEAD > $(VERSION).tar.gz

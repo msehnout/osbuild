@@ -3,15 +3,16 @@ import json
 import os
 import sys
 import osbuild
+import pkg_resources
 
 
 RESET = "\033[0m"
 BOLD = "\033[1m"
 RED = "\033[31m"
 
-
 def main():
     parser = argparse.ArgumentParser(description="Build operating system images")
+    parser.add_argument("--version", action="version", version=pkg_resources.get_distribution("osbuild").version)
     parser.add_argument("pipeline_path", metavar="PIPELINE",
                         help="json file containing the pipeline that should be built, or a '-' to read from stdin")
     parser.add_argument("--build-pipeline", metavar="PIPELINE", type=os.path.abspath,

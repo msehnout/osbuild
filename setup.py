@@ -3,7 +3,8 @@ import setuptools
 
 setuptools.setup(
     name="osbuild",
-    version="3",
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     description="A build system for OS images",
     packages=["osbuild"],
     license='Apache-2.0',
